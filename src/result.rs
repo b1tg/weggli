@@ -65,6 +65,7 @@ impl<'a, 'b> QueryResult {
     /// context lines around each captured node.
     pub fn display(&self, source: &'b str, before: usize, after: usize) -> String {
         let mut result = String::new();
+        // dbg!(&source); // 源代码
 
         // Add two lines of the function header
         // TODO: We should just store the range of the header and always print it in full.

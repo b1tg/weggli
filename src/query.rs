@@ -122,7 +122,7 @@ impl<'a> QueryTree {
         results
     }
 
-    /// This is the core method for query matching.
+    /// This is the **core method** for query matching.
     /// We start with outermost query and use tree-sitter's API to find all matching nodes.
     //  Due to our query predicates, this already takes care of all identifiers and variables.
     //  Once we have a match, we still need to recursively execute all subqueries and merge

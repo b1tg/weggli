@@ -1,0 +1,4 @@
+cargo run --  '{
+    _ $buf[_];
+    memcpy($buf,_,7);
+}' main.c

@@ -75,6 +75,7 @@ fn main() {
 
             let identifiers = qt.identifiers();
             variables.extend(qt.variables());
+            dbg!(&identifiers, &variables);
             WorkItem { qt, identifiers }
         })
         .collect();
@@ -111,10 +112,11 @@ fn main() {
             .collect()
     };
 
-    let exclude_re = helper_regex(&args.exclude);
+    let exclude_re = helper_regex(&args.exclude); // 此处两个正则针对目标文件
     let include_re = helper_regex(&args.include);
 
     // Collect and filter our input file set.
+    // wow! 还考虑了 stdin 输入的情况
     let mut files: Vec<PathBuf> = if args.path.to_string_lossy() == "-" {
         std::io::stdin()
             .lock()
@@ -195,6 +197,9 @@ fn parse_search_pattern(
     force_query: bool,
     normalized_patterns: &mut Vec<String>,
 ) -> QueryTree {
+    // 返回 Tree
+    // dbg!(&normalized_patterns, &pattern);
+    // &pattern = "{\n    _ $buf[_];\n    memcpy($buf,_,_);\n}"
     let mut tree = weggli::parse(pattern, is_cpp);
     let mut p = pattern;
 
@@ -371,6 +376,8 @@ fn process_regexes(
 
 /// Recursively iterate through all files under `path` that match an ending listed in `extensions`
 fn iter_files(path: &Path, extensions: Vec<String>) -> impl Iterator<Item = walkdir::DirEntry> {
+
+    // 大量使用了函数内的 lambda 函数，看上去不错
     let is_hidden = |entry: &walkdir::DirEntry| {
         entry
             .file_name()
@@ -419,15 +426,16 @@ fn parse_files_worker(
         .into_par_iter()
         .for_each_with(sender, move |sender, path| {
 
-            let maybe_parse = |path| {
+            let maybe_parse = |path| { // 返回 Option<(Tree, String|代码字符串)>
                 let c = match fs::read(path) {
                     Ok(content) => content,
                     Err(_) => return None,
                 };
 
-                let source = std::str::from_utf8(&c).ok()?;
+                let source = std::str::from_utf8(&c).ok()?; // TODO: ?
 
                 let potential_match = work.iter().any(|WorkItem { qt: _, identifiers }| {
+                    dbg!(&identifiers);
                     identifiers.iter().all(|i| source.find(i).is_some())
                 });
 
@@ -523,9 +531,16 @@ fn execute_queries_worker(
                                 "{}:{}\n{}",
                                 path.clone().bold(),
                                 line,
+                                // before 和 after 是匹配前后的行数(-A -B)，
+                                // 在命令后参数中指定
                                 m.display(&source, args.before, args.after)
                             );
                         } else {
+                            // dbg!( &i,
+                            //          &m,
+                            //          path.clone(),
+                            //          source.clone(),
+                            //         );
                             results_tx
                                 .send(ResultsCtx {
                                     query_index: i,

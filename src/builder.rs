@@ -24,11 +24,14 @@ use tree_sitter::{Node, TreeCursor};
 /// Translate a parsed and validated input source (specified by `source` and `cursor`) into a `QueryTree`.
 /// When `is_cpp` is set, C++ specific features are enabled.
 pub fn build_query_tree(source: &str, cursor: &mut TreeCursor, is_cpp: bool) -> QueryTree {
-    _build_query_tree(source, cursor, 0, is_cpp, false)
+
+    let res = _build_query_tree(source, cursor, 0, is_cpp, false);
+        // dbg!(&res);
+        res
 }
 
 fn _build_query_tree(
-    source: &str,
+    source: &str, // 其实是 pattern
     c: &mut TreeCursor,
     id: usize,
     is_cpp: bool,
@@ -140,6 +143,7 @@ fn process_captures(
     // Note that we need offset to assign the right names to our
     // capture predicates. So simply passing captures[offset..] to
     // the function would not work.
+    dbg!(&captures);
     for (i, c) in captures.iter().skip(offset).enumerate() {
         match c {
             Capture::Display => (),
@@ -168,6 +172,7 @@ fn process_captures(
             }
         }
     }
+    dbg!(&sexp);
 
     sexp
 }

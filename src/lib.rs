@@ -45,6 +45,7 @@ pub fn parse(source: &str, cpp: bool) -> Tree {
     };
     let mut parser = Parser::new();
     if let Err(e) = parser.set_language(language) {
+        // 有错误直接打印错误然后 panic, 不往外传递
         eprintln!("{}", e);
         panic!();
     }
@@ -59,6 +60,7 @@ fn ts_query(sexpr: &str, cpp: bool) -> tree_sitter::Query {
     } else {
         unsafe { tree_sitter_cpp() }
     };
+    // dbg!(&sexpr);
 
     match Query::new(language, &sexpr) {
         Ok(q) => q,
