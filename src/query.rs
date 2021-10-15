@@ -119,6 +119,23 @@ impl<'a> QueryTree {
 
         let mut results = self.match_internal(root, source, &mut cache);
         results.dedup();
+        // dbg!(&results);
+        // QueryResult {
+        //     captures: [
+        //         CaptureResult {
+        //             range: 21..108,
+        //             query_id: 0,
+        //             capture_idx: 1,
+        //         },
+        //         //...
+        //     ],
+        //     vars: {
+        //         "$buf": 1,
+        //     },
+        //     function: 21..108,
+        // },
+    
+
         results
     }
 
@@ -137,6 +154,7 @@ impl<'a> QueryTree {
         let text_callback = |n: Node| &source[n.byte_range()];
 
         let num_patterns = self.query.pattern_count();
+        // dbg!(&self.query);
         let mut pattern_results = Vec::with_capacity(num_patterns + 1);
         for _ in 0..num_patterns {
             pattern_results.push(Vec::new());

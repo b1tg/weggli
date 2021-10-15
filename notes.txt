@@ -2,3 +2,8 @@ cargo run --  '{
     _ $buf[_];
     memcpy($buf,_,7);
 }' main.c
+
+
+Questions:
+
+1. 源文件被 parse 成了什么数据结构，构建出来的 query 又是怎么与其匹配的，树结构的匹配？

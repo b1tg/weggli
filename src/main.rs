@@ -416,12 +416,20 @@ struct WorkItem {
 
 /// Iterate over all paths in `files`, parse files that might contain a match for any of the queries
 /// in `work` and send them to the next worker using `sender`.
+/// 总结来说：此函数通过 WorkItem 里面的 idendifier 对待选文件进行了初步筛选并解析，
+/// 把解析后的语法树及相关信息发送到接收端。
 fn parse_files_worker(
     files: Vec<PathBuf>,
     sender: Sender<(Arc<String>, Tree, String)>,
     work: &Vec<WorkItem>,
     is_cpp: bool,
 ) {
+
+    // for w in work {
+    //     dbg!(&w.identifiers); // ["memcpy"]
+    // }
+    // dbg!(&files); // "G:\\xx\\weggli\\main.c"
+    
     files
         .into_par_iter()
         .for_each_with(sender, move |sender, path| {
@@ -435,17 +443,22 @@ fn parse_files_worker(
                 let source = std::str::from_utf8(&c).ok()?; // TODO: ?
 
                 let potential_match = work.iter().any(|WorkItem { qt: _, identifiers }| {
-                    dbg!(&identifiers);
+                    // dbg!(&identifiers); // ["memcpy"]
                     identifiers.iter().all(|i| source.find(i).is_some())
                 });
 
+                // step#1 ：先用 identifier 把文件全部过滤一遍，比如这里不包含“memcpy”字符串的文件直接忽略掉，不进行下一步
                 if !potential_match {
                     None
                 } else {
+                    // step#2 ：weggli::parse，走到这里才会对文件进行语法 parse
+                    // weggli::parse 是纯粹地对源码进行解析，不涉及搜索项
+                    // dbg!(&source); // source就是文件的源码
                     Some((weggli::parse(source, is_cpp), source.to_string()))
                 }
             };
             if let Some((source_tree, source)) = maybe_parse(&path) {
+                // step#3 : 解析成功后，把 (源码、解析树、路径) 发送到接收端。over :)
                 sender
                     .send((
                         std::sync::Arc::new(source),
@@ -483,6 +496,7 @@ fn execute_queries_worker(
                 .enumerate()
                 .for_each(|(i, WorkItem { qt, identifiers: _ })| {
                     // Run query
+                    // dbg!(&qt, &tree);
                     let matches = qt.matches(tree.root_node(), &source);
 
                     if matches.is_empty() {

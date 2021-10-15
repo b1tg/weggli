@@ -54,6 +54,7 @@ pub fn parse(source: &str, cpp: bool) -> Tree {
 }
 
 // Internal helper function to create a new tree-sitter query.
+// 通过 sexp 建立一个 Query
 fn ts_query(sexpr: &str, cpp: bool) -> tree_sitter::Query {
     let language = if !cpp {
         unsafe { tree_sitter_c() }

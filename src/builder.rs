@@ -60,7 +60,7 @@ fn _build_query_tree(
         let needs_anchor = c.node().kind() == "compound_statement" && id == 0;
         debug!("query needs anchor: {}", needs_anchor);
 
-        // The main work happens here. Iterate through the AST and create a tree-sitter query
+        // !!! The **main work** happens here. Iterate through the AST and create a tree-sitter query
         let mut s = b.build(c, 0);
 
         // Make sure user supplied function headers are displayed by adding a Capture
@@ -103,13 +103,66 @@ fn _build_query_tree(
             let mut cursor = child.walk();
 
             let child_sexp = b.build(&mut cursor, 0);
+            // println!("child_sexp: {}", &child_sexp);
+            // (call_expression 
+            //     function: [(field_expression field: (field_identifier)@1) (identifier) @1] 
+            //     arguments: (
+            //         argument_list . [(identifier) (field_expression) (field_identifier)] @2 . (_) . (number_literal) @3
+            //     )
+            // )
+            
+            // dbg!(&b.captures);
+            // [
+            //     Variable(
+            //         "$buf",
+            //     ),
+            //     Check(
+            //         "memcpy",
+            //     ),
+            //     Variable(
+            //         "$buf",
+            //     ),
+            //     Number(
+            //         7,
+            //     ),
+            // ]
+            
+            // dbg!(&variables); 
+            // "$buf"
 
+
+            // dbg!(&b.captures, &before, &variables);
+            // &b.captures = [
+            //     Variable(
+            //         "$buf",
+            //     ),
+            //     Check(
+            //         "memcpy",
+            //     ),
+            //     Variable(
+            //         "$buf",
+            //     ),
+            //     Number(
+            //         7,
+            //     ),
+            // ]
+            // &before = 1
+            // &variables = { "$buf", }
+        
             let captures = &process_captures(&b.captures, before, &mut variables);
+            // println!("child_sexp:\n{}", child_sexp);
+            // 1st: (declaration ...
+            // 2st: (call_expression ...
+            // 详细结果见：sexp.txt
 
+            // println!("captures:\n{}", captures);
+            // (#eq? @1 "memcpy")
             if !child_sexp.is_empty() {
                 s += &format!("({} {})", child_sexp, captures);
             }
         }
+        // s 的结果见 sexp.txt
+        // println!("{}", &s);
         s
     };
 

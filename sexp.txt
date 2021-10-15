@@ -1,0 +1,33 @@
+(call_expression 
+    function: [(field_expression field: (field_identifier)@1) (identifier) @1] 
+    arguments: (
+        argument_list . [(identifier) (field_expression) (field_identifier)] @2 . (_) . (number_literal) @3
+    )
+)
+
+======
+
+(
+    (declaration 
+        type:(_) 
+        declarator:
+            (array_declarator 
+                declarator:[(identifier) (field_expression) (field_identifier)] 
+                @0 size:(_)
+            )
+    ) 
+)
+
+(
+    (call_expression 
+        function: [(field_expression field: (field_identifier)@1) (identifier) @1] 
+        arguments: (
+            argument_list . 
+            [(identifier) (field_expression) (field_identifier)] @2 . 
+            (_) . 
+            (number_literal) @3
+        )
+    ) 
+    (#eq? @1 "memcpy")
+)
+
